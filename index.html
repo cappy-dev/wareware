@@ -1,0 +1,2037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a0a2e">
+<title>WareWare | Cappy</title>
+<style>
+:root {
+  --purple: #6c0ce8;
+  --purple-dark: #3a0780;
+  --yellow: #ffd83d;
+  --pink: #ff3da8;
+  --green: #3dff7a;
+  --red: #ff2a2a;
+  --blue: #2db4ff;
+  --orange: #ff8a1a;
+  --bg: #1a0a2e;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}
+
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==================== TITLE SCREEN ==================== */
+.title-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at 50% 40%, var(--purple-dark) 0%, var(--bg) 100%);
+  z-index: 100;
+}
+
+.title-logo {
+  font-size: clamp(3rem, 12vw, 5.5rem);
+  font-weight: 900;
+  color: var(--yellow);
+  text-shadow: 4px 4px 0 var(--pink), 8px 8px 0 var(--purple);
+  letter-spacing: -2px;
+  transform: rotate(-4deg);
+  animation: titleBob 1.5s ease-in-out infinite;
+}
+
+@keyframes titleBob {
+  0%, 100% { transform: rotate(-4deg) translateY(0); }
+  50% { transform: rotate(-4deg) translateY(-10px); }
+}
+
+.title-sub {
+  margin-top: 10px;
+  font-size: clamp(0.9rem, 3.5vw, 1.3rem);
+  color: var(--green);
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.start-btn {
+  margin-top: 40px;
+  padding: 18px 50px;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: var(--bg);
+  background: var(--yellow);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 6px 0 var(--orange), 0 10px 20px rgba(0,0,0,0.4);
+  transition: transform 0.1s, box-shadow 0.1s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.start-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 var(--orange), 0 4px 10px rgba(0,0,0,0.4);
+}
+
+.title-hint {
+  margin-top: 20px;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.4);
+}
+
+/* ==================== HUD ==================== */
+.hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  padding-top: max(10px, env(safe-area-inset-top));
+  z-index: 50;
+  pointer-events: none;
+}
+
+.hud-left, .hud-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hud-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.lives {
+  display: flex;
+  gap: 4px;
+}
+
+.life-heart {
+  font-size: 1.3rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  transition: transform 0.2s, opacity 0.3s;
+}
+
+.life-heart.lost {
+  opacity: 0.15;
+  transform: scale(0.8);
+}
+
+.score-display {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--yellow);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.stage-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--bg);
+  background: var(--green);
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.stage-badge.boss {
+  background: var(--red);
+  color: white;
+  animation: bossPulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes bossPulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.1); }
+}
+
+/* ==================== GAME AREA ==================== */
+.game-area {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* ==================== TIMER RING ==================== */
+.timer-ring {
+  position: absolute;
+  bottom: 20px;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  width: 56px;
+  height: 56px;
+  z-index: 55;
+  pointer-events: none;
+}
+
+.timer-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.timer-ring circle {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.timer-bg {
+  stroke: rgba(255,255,255,0.15);
+}
+
+.timer-fg {
+  stroke: var(--green);
+  stroke-dasharray: 138;
+  stroke-dashoffset: 0;
+  transition: stroke 0.2s;
+}
+
+.timer-fg.warn { stroke: var(--yellow); }
+.timer-fg.danger { stroke: var(--red); }
+
+/* ==================== MICROGAME PROMPT ==================== */
+.prompt {
+  position: absolute;
+  top: 50px;
+  top: calc(50px + env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--yellow);
+  color: var(--bg);
+  font-size: clamp(1rem, 4.5vw, 1.5rem);
+  font-weight: 900;
+  padding: 10px 28px;
+  border-radius: 30px;
+  white-space: nowrap;
+  z-index: 56;
+  box-shadow: 0 4px 0 var(--orange), 0 6px 12px rgba(0,0,0,0.3);
+  animation: promptPop 0.3s ease-out;
+  pointer-events: none;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+@keyframes promptPop {
+  0% { transform: translateX(-50%) scale(0.5); opacity: 0; }
+  60% { transform: translateX(-50%) scale(1.15); }
+  100% { transform: translateX(-50%) scale(1); opacity: 1; }
+}
+
+/* ==================== RESULT FLASH ==================== */
+.result-flash {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.result-flash.show {
+  animation: flashShow 0.8s ease-out forwards;
+}
+
+@keyframes flashShow {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.result-flash.win {
+  background: radial-gradient(ellipse at center, rgba(61,255,122,0.3) 0%, transparent 70%);
+}
+
+.result-flash.lose {
+  background: radial-gradient(ellipse at center, rgba(255,42,42,0.3) 0%, transparent 70%);
+}
+
+.result-text {
+  font-size: clamp(2.5rem, 10vw, 4rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.result-flash.win .result-text {
+  color: var(--green);
+  text-shadow: 4px 4px 0 var(--bg);
+}
+
+.result-flash.lose .result-text {
+  color: var(--red);
+  text-shadow: 4px 4px 0 var(--bg);
+}
+
+/* ==================== GAME OVER ==================== */
+.game-over {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at 50% 40%, #4a0020 0%, var(--bg) 100%);
+  z-index: 300;
+}
+
+.go-title {
+  font-size: clamp(2.8rem, 10vw, 4.5rem);
+  font-weight: 900;
+  color: var(--red);
+  text-shadow: 4px 4px 0 var(--purple-dark);
+  transform: rotate(-3deg);
+}
+
+.go-score {
+  margin-top: 16px;
+  font-size: 1.2rem;
+  color: white;
+  font-weight: 700;
+}
+
+.go-score-num {
+  color: var(--yellow);
+  font-size: 2.5rem;
+  font-weight: 900;
+}
+
+.go-stage {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.6);
+  font-weight: 600;
+}
+
+.retry-btn {
+  margin-top: 30px;
+  padding: 16px 44px;
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--bg);
+  background: var(--green);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #1aa850, 0 10px 20px rgba(0,0,0,0.4);
+  transition: transform 0.1s, box-shadow 0.1s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.retry-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #1aa850, 0 4px 10px rgba(0,0,0,0.4);
+}
+
+/* ==================== SPEED UP ==================== */
+.speed-up {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  z-index: 250;
+  opacity: 0;
+}
+
+.speed-up.show {
+  animation: speedUpShow 1.5s ease-out forwards;
+}
+
+@keyframes speedUpShow {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.speed-up-text {
+  font-size: clamp(2rem, 8vw, 3.5rem);
+  font-weight: 900;
+  color: var(--yellow);
+  text-shadow: 4px 4px 0 var(--pink);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  animation: speedUpZoom 1.5s ease-out;
+}
+
+@keyframes speedUpZoom {
+  0% { transform: scale(0.3); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* ==================== MICROGAME ELEMENTS ==================== */
+
+/* Generic game element */
+.game-el {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* -- TAP TARGET -- */
+.tap-target {
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--yellow), var(--orange));
+  box-shadow: 0 4px 0 #cc6a00;
+  color: var(--bg);
+  font-size: 2rem;
+  font-weight: 900;
+  cursor: pointer;
+  animation: targetPulse 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes targetPulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.08); }
+}
+
+/* -- DODGE ENEMY -- */
+.dodge-enemy {
+  border-radius: 8px;
+  background: var(--red);
+  box-shadow: 0 4px 0 #aa0000;
+}
+
+/* -- PLAYER DOT -- */
+.player-dot {
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: 0 2px 8px rgba(45,180,255,0.6), inset 0 -3px 6px rgba(0,0,0,0.3);
+  z-index: 10;
+}
+
+/* -- SWIPE AREA -- */
+.swipe-area {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.swipe-arrow {
+  position: absolute;
+  font-size: 5rem;
+  font-weight: 900;
+  color: var(--yellow);
+  text-shadow: 3px 3px 0 var(--bg);
+  animation: arrowBob 0.4s ease-in-out infinite alternate;
+}
+
+@keyframes arrowBob {
+  from { transform: scale(1); }
+  to { transform: scale(1.2); }
+}
+
+/* -- DRAG ITEM -- */
+.drag-item {
+  border-radius: 12px;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.3);
+  transition: box-shadow 0.1s;
+}
+
+.drag-item.grabbing {
+  cursor: grabbing;
+}
+
+/* -- DRAG TARGET ZONE -- */
+.drop-zone {
+  border: 4px dashed var(--green);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--green);
+  text-transform: uppercase;
+}
+
+.drop-zone.hover {
+  background: rgba(61,255,122,0.15);
+  border-style: solid;
+}
+
+/* -- SHAKE BALL -- */
+.shake-ball {
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--pink), #cc1470);
+  box-shadow: 0 4px 0 #a00a50;
+}
+
+/* -- COUNT DISPLAY -- */
+.count-display {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: clamp(3rem, 12vw, 5rem);
+  font-weight: 900;
+  color: white;
+  text-shadow: 3px 3px 0 var(--purple);
+}
+
+/* -- MOLE HOLE -- */
+.mole-field {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-items: center;
+}
+
+.mole-hole {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 30%, #5a3a0e 0%, #2a1a05 60%, #1a0a02 100%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  box-shadow: inset 0 4px 8px rgba(0,0,0,0.5);
+}
+
+.mole {
+  font-size: 2.8rem;
+  position: absolute;
+  bottom: -60px;
+  transition: bottom 0.15s ease-out;
+}
+
+.mole.up {
+  bottom: 4px;
+}
+
+.mole.hit {
+  bottom: -60px;
+  transition: bottom 0.1s;
+}
+
+/* -- HOLD BUTTON -- */
+.hold-btn {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--green), #1aa850);
+  box-shadow: 0 6px 0 #0a8030;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--bg);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.hold-btn.held {
+  transform: scale(0.92);
+  box-shadow: 0 2px 0 #0a8030;
+}
+
+.hold-meter {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  height: 20px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.15);
+  overflow: hidden;
+}
+
+.hold-meter-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--green);
+  transition: width 0.05s linear;
+  border-radius: 10px;
+}
+
+/* -- BALANCE BAR -- */
+.balance-bar-container {
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  max-width: 300px;
+}
+
+.balance-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.balance-marker {
+  position: absolute;
+  top: -4px;
+  width: 4px;
+  height: 16px;
+  background: transparent;
+}
+
+.balance-pointer {
+  position: absolute;
+  top: -8px;
+  width: 20px;
+  height: 24px;
+  background: var(--yellow);
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  transition: left 0.05s;
+}
+
+.balance-zone {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: var(--green);
+  opacity: 0.25;
+  border-radius: 4px;
+}
+
+/* -- COLOR BUTTONS -- */
+.color-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 20px;
+  width: 100%;
+  height: 100%;
+}
+
+.color-btn {
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  cursor: pointer;
+  box-shadow: 0 5px 0 rgba(0,0,0,0.3);
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+
+.color-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.3);
+}
+
+.c-red { background: var(--red); }
+.c-blue { background: var(--blue); }
+.c-green { background: var(--green); }
+.c-yellow { background: var(--yellow); }
+
+/* -- SORTABLE ITEMS -- */
+.sorter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px;
+  width: 100%;
+}
+
+.sort-item {
+  width: 200px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  background: var(--purple);
+  color: white;
+  font-weight: 800;
+  font-size: 1.2rem;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--purple-dark);
+  transition: transform 0.1s;
+}
+
+.sort-item:active {
+  transform: translateY(2px);
+}
+
+.sort-item.selected {
+  background: var(--yellow);
+  color: var(--bg);
+  box-shadow: 0 4px 0 var(--orange);
+}
+
+/* -- SPIN WHEEL -- */
+.spin-wheel {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  border: 6px solid var(--yellow);
+  position: relative;
+  transition: transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+}
+
+.spin-pointer {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 20px solid var(--red);
+  z-index: 5;
+}
+
+.spin-btn {
+  margin-top: 30px;
+  padding: 14px 36px;
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: white;
+  background: var(--purple);
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 5px 0 var(--purple-dark);
+  text-transform: uppercase;
+}
+
+.spin-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 var(--purple-dark);
+}
+
+.spin-btn:disabled {
+  opacity: 0.4;
+}
+
+/* -- CATCH FALLING -- */
+.catch-area {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.catch-bucket {
+  position: absolute;
+  bottom: 20px;
+  width: 80px;
+  height: 50px;
+  background: var(--yellow);
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 4px 0 var(--orange);
+}
+
+.falling-item {
+  position: absolute;
+  font-size: 2rem;
+  top: -40px;
+}
+
+/* -- TRACING -- */
+.trace-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+/* -- HIDDEN -- */
+.hidden {
+  display: none !important;
+}
+
+/* -- SHAKE ANIMATION -- */
+@keyframes screenShake {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(-5px, 3px); }
+  50% { transform: translate(5px, -3px); }
+  75% { transform: translate(-3px, -5px); }
+}
+
+.shake {
+  animation: screenShake 0.3s ease-in-out;
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- TITLE SCREEN -->
+  <div class="title-screen" id="titleScreen">
+    <div class="title-logo">WareWare!</div>
+    <div class="title-sub">Tap. Swipe. Survive.</div>
+    <button class="start-btn" id="startBtn">Start!</button>
+    <div class="title-hint">Best played on phone. Tap to begin!</div>
+  </div>
+
+  <!-- HUD -->
+  <div class="hud hidden" id="hud">
+    <div class="hud-left">
+      <span class="hud-label">Lives</span>
+      <div class="lives" id="lives"></div>
+    </div>
+    <div class="hud-right">
+      <span class="stage-badge" id="stageBadge">Stage 1</span>
+      <span class="hud-label">Score</span>
+      <span class="score-display" id="score">0</span>
+    </div>
+  </div>
+
+  <!-- GAME AREA -->
+  <div class="game-area" id="gameArea"></div>
+
+  <!-- PROMPT -->
+  <div class="prompt hidden" id="prompt"></div>
+
+  <!-- TIMER RING -->
+  <div class="timer-ring hidden" id="timerRing">
+    <svg viewBox="0 0 50 50">
+      <circle class="timer-bg" cx="25" cy="25" r="22"/>
+      <circle class="timer-fg" id="timerFg" cx="25" cy="25" r="22"/>
+    </svg>
+  </div>
+
+  <!-- RESULT FLASH -->
+  <div class="result-flash" id="resultFlash">
+    <div class="result-text" id="resultText"></div>
+  </div>
+
+  <!-- SPEED UP SCREEN -->
+  <div class="speed-up" id="speedUp">
+    <div class="speed-up-text" id="speedUpText">Faster!</div>
+  </div>
+
+  <!-- GAME OVER -->
+  <div class="game-over hidden" id="gameOver">
+    <div class="go-title">Game Over!</div>
+    <div class="go-score">You scored</div>
+    <div class="go-score-num" id="goScore">0</div>
+    <div class="go-stage" id="goStage">Reached Stage 1</div>
+    <button class="retry-btn" id="retryBtn">Try Again!</button>
+  </div>
+</div>
+
+<script>
+// ===========================================
+// WAREWARE - WarioWare-style microgame engine
+// ===========================================
+
+const App = {
+  titleScreen: document.getElementById('titleScreen'),
+  hud: document.getElementById('hud'),
+  livesEl: document.getElementById('lives'),
+  scoreEl: document.getElementById('score'),
+  stageBadge: document.getElementById('stageBadge'),
+  gameArea: document.getElementById('gameArea'),
+  prompt: document.getElementById('prompt'),
+  timerRing: document.getElementById('timerRing'),
+  timerFg: document.getElementById('timerFg'),
+  resultFlash: document.getElementById('resultFlash'),
+  resultText: document.getElementById('resultText'),
+  speedUp: document.getElementById('speedUp'),
+  speedUpText: document.getElementById('speedUpText'),
+  gameOver: document.getElementById('gameOver'),
+  goScore: document.getElementById('goScore'),
+  goStage: document.getElementById('goStage'),
+  startBtn: document.getElementById('startBtn'),
+  retryBtn: document.getElementById('retryBtn'),
+};
+
+// State
+let state = {
+  lives: 4,
+  maxLives: 4,
+  score: 0,
+  stage: 1,
+  gamesThisStage: 0,
+  gamesPerStage: 4,
+  speed: 1.0,
+  currentGame: null,
+  gameTimer: null,
+  gameStartTime: 0,
+  gameDuration: 0,
+  inputDone: false,
+  playing: false,
+  bossStage: false,
+  bossWins: 0,
+  bossNeeded: 3,
+};
+
+const TIMER_CIRCUMFERENCE = 138;
+
+// ===========================================
+// MICROGAMES
+// ===========================================
+
+const microgames = {
+  // --- TAP THE TARGET ---
+  tap: {
+    prompt: "Tap!",
+    init(el, duration) {
+      el.innerHTML = '';
+      const target = document.createElement('div');
+      target.className = 'tap-target game-el';
+      const size = 80 + Math.random() * 40;
+      target.style.width = target.style.height = size + 'px';
+      target.style.left = (Math.random() * (window.innerWidth - size - 40) + 20) + 'px';
+      target.style.top = (Math.random() * (window.innerHeight - size - 120) + 100) + 'px';
+      target.textContent = '👆';
+      target.style.fontSize = (size * 0.4) + 'px';
+      el.appendChild(target);
+      this._target = target;
+
+      const handler = (e) => {
+        e.preventDefault();
+        win();
+      };
+      target.addEventListener('touchstart', handler, { passive: false });
+      target.addEventListener('mousedown', handler);
+      this._cleanup = () => {
+        target.removeEventListener('touchstart', handler);
+        target.removeEventListener('mousedown', handler);
+      };
+    },
+    cleanup() { if (this._cleanup) this._cleanup(); }
+  },
+
+  // --- DODGE ---
+  dodge: {
+    prompt: "Dodge!",
+    init(el, duration) {
+      el.innerHTML = '';
+      el.style.background = 'radial-gradient(ellipse at center, #2a1a40 0%, var(--bg) 100%)';
+
+      // Player dot starts center
+      const player = document.createElement('div');
+      player.className = 'player-dot game-el';
+      player.style.width = player.style.height = '40px';
+      player.style.left = (window.innerWidth / 2 - 20) + 'px';
+      player.style.top = (window.innerHeight / 2 - 20) + 'px';
+      el.appendChild(player);
+
+      // Spawn enemies that fly across
+      const enemies = [];
+      const spawnEnemy = () => {
+        if (state.inputDone) return;
+        const enemy = document.createElement('div');
+        enemy.className = 'dodge-enemy game-el';
+        enemy.style.width = enemy.style.height = '35px';
+        const side = Math.floor(Math.random() * 4);
+        let x, y, vx, vy;
+        const speed = 3 + Math.random() * 2 + state.speed;
+        if (side === 0) { x = -40; y = Math.random() * window.innerHeight; vx = speed; vy = (Math.random() - 0.5) * 2; }
+        else if (side === 1) { x = window.innerWidth + 40; y = Math.random() * window.innerHeight; vx = -speed; vy = (Math.random() - 0.5) * 2; }
+        else if (side === 2) { x = Math.random() * window.innerWidth; y = -40; vx = (Math.random() - 0.5) * 2; vy = speed; }
+        else { x = Math.random() * window.innerWidth; y = window.innerHeight + 40; vx = (Math.random() - 0.5) * 2; vy = -speed; }
+
+        enemy.style.left = x + 'px';
+        enemy.style.top = y + 'px';
+        el.appendChild(enemy);
+        enemies.push({ el: enemy, x, y, vx, vy });
+
+        if (!state.inputDone) {
+          setTimeout(spawnEnemy, Math.max(200, 600 / state.speed));
+        }
+      };
+      spawnEnemy();
+
+      // Move player by touch
+      let px = window.innerWidth / 2 - 20, py = window.innerHeight / 2 - 20;
+      const moveHandler = (e) => {
+        e.preventDefault();
+        const t = e.touches ? e.touches[0] : e;
+        px = t.clientX - 20;
+        py = t.clientY - 20;
+        player.style.left = px + 'px';
+        player.style.top = py + 'px';
+      };
+      el.addEventListener('touchmove', moveHandler, { passive: false });
+      el.addEventListener('mousemove', moveHandler);
+
+      // Animation loop
+      let rafId;
+      const animate = () => {
+        if (state.inputDone) return;
+        for (const e of enemies) {
+          e.x += e.vx;
+          e.y += e.vy;
+          e.el.style.left = e.x + 'px';
+          e.el.style.top = e.y + 'px';
+
+          // Collision check
+          const dx = e.x + 17 - (px + 20);
+          const dy = e.y + 17 - (py + 20);
+          if (Math.abs(dx) < 32 && Math.abs(dy) < 32) {
+            lose();
+            return;
+          }
+        }
+        rafId = requestAnimationFrame(animate);
+      };
+      animate();
+
+      this._cleanup = () => {
+        cancelAnimationFrame(rafId);
+        el.removeEventListener('touchmove', moveHandler);
+        el.removeEventListener('mousemove', moveHandler);
+        el.style.background = '';
+      };
+    },
+    cleanup() { if (this._cleanup) this._cleanup(); }
+  },
+
+  // --- SWIPE ---
+  swipe: {
+    prompt: "Swipe!",
+    init(el, duration) {
+      el.innerHTML = '';
+      const swipeArea = document.createElement('div');
+      swipeArea.className = 'swipe-area';
+      el.appendChild(swipeArea);
+
+      const directions = ['left', 'right', 'up', 'down'];
+      const dir = directions[Math.floor(Math.random() * directions.length)];
+      const arrows = { left: '⬅', right: '➡', up: '⬆', down: '⬇' };
+
+      const arrow = document.createElement('div');
+      arrow.className = 'swipe-arrow game-el';
+      arrow.textContent = arrows[dir];
+      arrow.style.left = '50%';
+      arrow.style.top = '50%';
+      arrow.style.transform = 'translate(-50%, -50%)';
+      swipeArea.appendChild(arrow);
+
+      let startX, startY;
+      const startHandler = (e) => {
+        e.preventDefault();
+        const t = e.touches ? e.touches[0] : e;
+        startX = t.clientX;
+        startY = t.clientY;
+      };
+      const moveHandler = (e) => {
+        if (startX === undefined || state.inputDone) return;
+        e.preventDefault();
+        const t = e.touches ? e.touches[0] : e;
+        const dx = t.clientX - startX;
+        const dy = t.clientY - startY;
+        const threshold = 50;
+        let matched = false;
+        if (Math.abs(dx) > threshold || Math.abs(dy) > threshold) {
+          if (dir === 'left' && dx < -threshold) matched = true;
+          else if (dir === 'right' && dx > threshold) matched = true;
+          else if (dir === 'up' && dy < -threshold) matched = true;
+          else if (dir === 'down' && dy > threshold) matched = true;
+
+          if (matched) {
+            win();
+            return;
+          }
+
+          // Wrong swipe
+          if (Math.abs(dx) > 30 || Math.abs(dy) > 30) {
+            const wrongDir =
+              (dir !== 'left' && dx < -threshold) ||
+              (dir !== 'right' && dx > threshold) ||
+              (dir !== 'up' && dy < -threshold) ||
+              (dir !== 'down' && dy > threshold);
+            if (wrongDir && (Math.abs(dx) > threshold || Math.abs(dy) > threshold)) {
+              lose();
+            }
+          }
+        }
+      };
+
+      swipeArea.addEventListener('touchstart', startHandler, { passive: false });
+      swipeArea.addEventListener('touchmove', moveHandler, { passive: false });
+      swipeArea.addEventListener('mousedown', startHandler);
+      swipeArea.addEventListener('mousemove', moveHandler);
+
+      this._cleanup = () => {
+        swipeArea.removeEventListener('touchstart', startHandler);
+        swipeArea.removeEventListener('touchmove', moveHandler);
+        swipeArea.removeEventListener('mousedown', startHandler);
+        swipeArea.removeEventListener('mousemove', moveHandler);
+      };
+    },
+    cleanup() { if (this._cleanup) this._cleanup(); }
+  },
+
+  // --- DRAG TO ZONE ---
+  drag: {
+    prompt: "Drag it!",
+    init(el, duration) {
+      el.innerHTML = '';
+      const items = ['📦', '🎁', '⚽', '🍎'];
+      const item = items[Math.floor(Math.random() * items.length)];
+
+      const dragEl = document.createElement('div');
+      dragEl.className = 'drag-item game-el';
+      dragEl.textContent = item;
+      dragEl.style.width = dragEl.style.height = '80px';
+      dragEl.style.left = (window.innerWidth / 2 - 40) + 'px';
+      dragEl.style.top = (window.innerHeight * 0.35) + 'px';
+      dragEl.style.background = 'var(--yellow)';
+      el.appendChild(dragEl);
+
+      const drop = document.createElement('div');
+      drop.className = 'drop-zone game-el';
+      drop.style.width = '120px';
+      drop.style.height = '120px';
+      drop.style.left = (window.innerWidth / 2 - 60) + 'px';
+      drop.style.top = (window.innerHeight - 220) + 'px';
+      drop.textContent = 'Here!';
+      el.appendChild(drop);
+
+      let dragging = false;
+      let offsetX, offsetY;
+      const startHandler = (e) => {
+        e.preventDefault();
+        dragging = true;
+        dragEl.classList.add('grabbing');
+        const t = e.touches ? e.touches[0] : e;
+        const rect = dragEl.getBoundingClientRect();
+        offsetX = t.clientX - rect.left;
+        offsetY = t.clientY - rect.top;
+      };
+      const moveHandler = (e) => {
+        if (!dragging || state.inputDone) return;
+        e.preventDefault();
+        const t = e.touches ? e.touches[0] : e;
+        let x = t.clientX - offsetX;
+        let y = t.clientY - offsetY;
+        x = Math.max(0, Math.min(window.innerWidth - 80, x));
+        y = Math.max(0, Math.min(window.innerHeight - 80, y));
+        dragEl.style.left = x + 'px';
+        dragEl.style.top = y + 'px';
+
+        // Hover check
+        const dropRect = drop.getBoundingClientRect();
+        if (x + 40 > dropRect.left && x + 40 < dropRect.right &&
+            y + 40 > dropRect.top && y + 40 < dropRect.bottom) {
+          drop.classList.add('hover');
+        } else {
+          drop.classList.remove('hover');
+        }
+      };
+      const endHandler = (e) => {
+        if (!dragging || state.inputDone) return;
+        dragging = false;
+        dragEl.classList.remove('grabbing');
+        const dropRect = drop.getBoundingClientRect();
+        const dragRect = dragEl.getBoundingClientRect();
+        if (dragRect.left + 40 > dropRect.left && dragRect.left + 40 < dropRect.right &&
+            dragRect.top + 40 > dropRect.top && dragRect.top + 40 < dropRect.bottom) {
+          drop.classList.remove('hover');
+          win();
+        }
+      };
+
+      dragEl.addEventListener('touchstart', startHandler, { passive: false });
+      dragEl.addEventListener('touchmove', moveHandler, { passive: false });
+      dragEl.addEventListener('touchend', endHandler);
+      dragEl.addEventListener('mousedown', startHandler);
+      window.addEventListener('mousemove', moveHandler);
+      window.addEventListener('mouseup', endHandler);
+
+      this._cleanup = () => {
+        dragEl.removeEventListener('touchstart', startHandler);
+        dragEl.removeEventListener('touchmove', moveHandler);
+        dragEl.removeEventListener('touchend', endHandler);
+        dragEl.removeEventListener('mousedown', startHandler);
+        window.removeEventListener('mousemove', moveHandler);
+        window.removeEventListener('mouseup', endHandler);
+      };
+    },
+    cleanup() { if (this._cleanup) this._cleanup(); }
+  },
+
+  // --- SHAKE ---
+  shake: {
+    prompt: "Shake it!",
+    init(el, duration) {
+      el.innerHTML = '';
+      const ball = document.createElement('div');
+      ball.className = 'shake-ball game-el';
+      ball.style.width = ball.style.height = '100px';
+      ball.style.left = (window.innerWidth / 2 - 50) + 'px';
+      ball.style.top = (window.innerHeight / 2 - 50) + 'px';
+      el.appendChild(ball);
+
+      const counter = document.createElement('div');
+      counter.className = 'count-display';
+      counter.style.top = '30%';
+      counter.textContent = '0';
+      el.appendChild(counter);
+
+      let count = 0;
+      let lastX = null, lastY = null;
+      let totalMovement = 0;
+
+      const moveHandler = (e) => {
+        if (state.inputDone) return;
+        e.preventDefault();
+        const t = e.touches ? e.touches[0] : e;
+        if (lastX !== null) {
+          const dx = t.clientX - lastX;
+          const dy = t.clientY - lastY;
+          totalMovement += Math.sqrt(dx * dx + dy * dy);
+          if (totalMovement > 60) {
+            count++;
+            totalMovement = 0;
+            counter.textContent = count;
+            ball.style.transform = `scale(${1 + count * 0.05})`;
+            if (count >= 5) {
+              win();
+              return;
+            }
+          }
+        }
+        lastX = t.clientX;
+        lastY = t.clientY;
+      };
+
+      el.addEventListener('touchmove', moveHandler, { passive: false });
+      el.addEventListener('mousemove', moveHandler);
+
+      // Also support accelerometer
+      if (window.DeviceMotionEvent) {
+        const motionHandler = (e) => {
+          if (state.inputDone) return;
+          const a = e.accelerationIncludingGravity;
+          if (a && (Math.abs(a.x) > 15 || Math.abs(a.y) > 15 || Math.abs(a.z) > 15)) {
+            count++;
+            counter.textContent = count;
+            ball.style.transform = `scale(${1 + count * 0.05})`;
+            if (count >= 5) {
+              win();
+              window.removeEventListener('devicemotion', motionHandler);
+              return;
+            }
+          }
+        };
+        window.addEventListener('devicemotion', motionHandler);
+        this._motionCleanup = () => window.removeEventListener('devicemotion', motionHandler);
+      }
+
+      this._cleanup = () => {
+        el.removeEventListener('touchmove', moveHandler);
+        el.removeEventListener('mousemove', moveHandler);
+        if (this._motionCleanup) this._motionCleanup();
+      };
+    },
+    cleanup() { if (this._cleanup) this._cleanup(); }
+  },
+
+  // --- WHACK A MOLE ---
+  mole: {
+    prompt: "Whack it!",
+    init(el, duration) {
+      el.innerHTML = '';
+      const field = document.createElement('div');
+      field.className = 'mole-field';
+      field.style.gridTemplateColumns = 'repeat(3, 70px)';
+      field.style.gridTemplateRows = 'repeat(3, 70px)';
+      el.appendChild(field);
+
+      const holes = [];
+      let hits = 0;
+      const need = 3;
+
+      for (let i = 0; i < 9; i++) {
+        const hole = document.createElement('div');
+        hole.className = 'mole-hole';
+        const mole = document.createElement('div');
+        mole.className = 'mole';
+        mole.textContent = '🐹';
+        hole.appendChild(mole);
+        field.appendChild(hole);
+        holes.push({ hole, mole, up: false });
+
+        const whackHandler = (e) => {
+          e.preventDefault();
+          if (!holes[i].up || state.inputDone) return;
+          holes[i].mole.classList.add('hit');
+          holes[i].up = false;
+          holes[i].mole.classList.remove('up');
+          hits++;
+          if (hits >= need) {
+            win();
+          }
+        };
+        hole.addEventListener('touchstart', whackHandler, { passive: false });
+        hole.addEventListener('mousedown', whackHandler);
+      }
+
+      const popMole = () => {
+        if (state.inputDone) return;
+        const avail = holes.filter(h => !h.up);
+        if (avail.length > 0) {
+          const h = avail[Math.floor(Math.random() * avail.length)];
+          h.up = true;
+          h.mole.classList.remove('hit');
+          h.mole.classList.add('up');
+          setTimeout(() => {
+            if (!state.inputDone && h.up) {
+              h.up = false;
+              h.mole.classList.remove('up');
+            }
+          }, Math.max(500, 1000 / state.speed));
+        }
+        setTimeout(popMole, Math.max(300, 700 / state.speed));
+      };
+      setTimeout(popMole, 300);
+
+      this._cleanup = () => {};
+    },
+    cleanup() { if (this._cleanup) this._cleanup(); }
+  },
+
+  // --- HOLD THE BUTTON ---
+  hold: {
+    prompt: "Hold!",
+    init(el, duration) {
+      el.innerHTML = '';
+
+      const btn = document.createElement('div');
+      btn.className = 'hold-btn game-el';
+      btn.textContent = 'HOLD';
+      btn.style.left = (window.innerWidth / 2 - 100) + 'px';
+      btn.style.top = (window.innerHeight / 2 - 120) + 'px';
+      el.appendChild(btn);
+
+      const meter = document.createElement('div');
+      meter.className = 'hold-meter';
+      const fill = document.createElement('div');
+      fill.className = 'hold-meter-fill';
+      meter.appendChild(fill);
+      el.appendChild(meter);
+
+      let holding = false;
+      let progress = 0;
+      let rafId;
+
+      const startHold = (e) => {
+        e.preventDefault();
+        holding = true;
+        btn.classList.add('held');
+      };
+      const endHold = (e) => {
+        if (e) e.preventDefault();
+        holding = false;
+        btn.classList.remove('held');
+      };
+
+      btn.addEventListener('touchstart', startHold, { passive: false });
+      btn.addEventListener('touchend', endHold);
+      btn.addEventListener('touchcancel', endHold);
+      btn.addEventListener('mousedown', startHold);
+      window.addEventListener('mouseup', endHold);
+
+      const animate = () => {
+        if (state.inputDone) return;
+        if (holding) {
+          progress += 1.5;
+          if (progress >= 100) {
+            progress = 100;
+            win();
+            return;
+          }
+        } else {
+          progress = Math.max(0, progress - 1);
+        }
+        fill.style.width = progress + '%';
+        rafId = requestAnimationFrame(animate);
+      };
+      animate();
+
+      this._cleanup = () => {
+        cancelAnimationFrame(rafId);
+        btn.removeEventListener('touchstart', startHold);
+        btn.removeEventListener('touchend', endHold);
+        btn.removeEventListener('touchcancel', endHold);
+        btn.removeEventListener('mousedown', startHold);
+        window.removeEventListener('mouseup', endHold);
+      };
+    },
+    cleanup() { if (this._cleanup) this._cleanup(); }
+  },
+
+  // --- DON'T TAP ---
+  donttap: {
+    prompt: "Don't tap!",
+    init(el, duration) {
+      el.innerHTML = '';
+      el.style.background = 'radial-gradient(ellipse at center, #1a1a2a 0%, var(--bg) 100%)';
+
+      const text = document.createElement('div');
+      text.style.position = 'absolute';
+      text.style.top = '50%';
+      text.style.left = '50%';
+      text.style.transform = 'translate(-50%, -50%)';
+      text.style.fontSize = '2rem';
+      text.style.fontWeight = '900';
+      text.style.color = 'var(--red)';
+      text.style.textAlign = 'center';
+      text.textContent = ' resist... ';
+      el.appendChild(text);
+
+      // Add tempting buttons
+      const colors = ['var(--yellow)', 'var(--green)', 'var(--blue)', 'var(--pink)'];
+      const positions = [
+        { x: 0.15, y: 0.3 }, { x: 0.75, y: 0.25 },
+        { x: 0.7, y: 0.7 }, { x: 0.15, y: 0.7 }
+      ];
+      positions.forEach((pos, i) => {
+        const btn = document.createElement('div');
+        btn.style.position = 'absolute';
+        btn.style.width = '70px';
+        btn.style.height = '70px';
+        btn.style.borderRadius = '50%';
+        btn.style.background = colors[i];
+        btn.style.left = (window.innerWidth * pos.x) + 'px';
+        btn.style.top = (window.innerHeight * pos.y) + 'px';
+        btn.style.cursor = 'pointer';
+        btn.style.boxShadow = '0 4px 0 rgba(0,0,0,0.3)';
+        btn.style.animation = 'targetPulse 0.8s ease-in-out infinite alternate';
+        btn.style.animationDelay = (i * 0.2) + 's';
+        el.appendChild(btn);
+
+        const tapHandler = (e) => {
+          e.preventDefault();
+          lose();
+        };
+        btn.addEventListener('touchstart', tapHandler, { passive: false });
+        btn.addEventListener('mousedown', tapHandler);
+      });
+
+      // Win condition: survive the timer (handled by main timer)
+      this._cleanup = () => {
+        el.style.background = '';
+      };
+    },
+    cleanup() { if (this._cleanup) this._cleanup(); }
+  },
+
+  // --- TAP RAPIDLY ---
+  rapidtap: {
+    prompt: "Tap fast!",
+    init(el, duration) {
+      el.innerHTML = '';
+      const target = document.createElement('div');
+      target.className = 'tap-target game-el';
+      target.style.width = target.style.height = '120px';
+      target.style.left = (window.innerWidth / 2 - 60) + 'px';
+      target.style.top = (window.innerHeight / 2 - 60) + 'px';
+      target.style.fontSize = '2.5rem';
+      target.textContent = '👊';
+      el.appendChild(target);
+
+      const counter = document.createElement('div');
+      counter.className = 'count-display';
+      counter.style.top = '25%';
+      counter.textContent = '0/8';
+      el.appendChild(counter);
+
+      let count = 0;
+      const need = 8;
+      const handler = (e) => {
+        e.preventDefault();
+        count++;
+        counter.textContent = count + '/' + need;
+        target.style.transform = `scale(${0.9 + Math.random() * 0.2})`;
+        // Move target slightly
+        const nx = window.innerWidth / 2 - 60 + (Math.random() - 0.5) * 80;
+        const ny = window.innerHeight / 2 - 60 + (Math.random() - 0.5) * 80;
+        target.style.left = nx + 'px';
+        target.style.top = ny + 'px';
+        if (count >= need) {
+          win();
+        }
+      };
+      target.addEventListener('touchstart', handler, { passive: false });
+      target.addEventListener('mousedown', handler);
+
+      this._cleanup = () => {
+        target.removeEventListener('touchstart', handler);
+        target.removeEventListener('mousedown', handler);
+      };
+    },
+    cleanup() { if (this._cleanup) this._cleanup(); }
+  },
+
+  // --- BALANCE ---
+  balance: {
+    prompt: "Keep center!",
+    init(el, duration) {
+      el.innerHTML = '';
+      el.style.background = 'radial-gradient(ellipse at center, #1a2a1a 0%, var(--bg) 100%)';
+
+      const pointer = { x: 0, vx: 0 };
+      let lastTouchX = null;
+      let rafId;
+
+      const container = document.createElement('div');
+      container.className = 'balance-bar-container';
+      el.appendChild(container);
+
+      const bar = document.createElement('div');
+      bar.className = 'balance-bar';
+      container.appendChild(bar);
+
+      const zone = document.createElement('div');
+      zone.className = 'balance-zone';
+      zone.style.left = '42%';
+      zone.style.width = '16%';
+      bar.appendChild(zone);
+
+      const pointerEl = document.createElement('div');
+      pointerEl.className = 'balance-pointer';
+      pointerEl.style.left = '48%';
+      bar.appendChild(pointerEl);
+
+      const inZoneStart = Date.now();
+      let inZoneTime = 0;
+
+      const moveHandler = (e) => {
+        if (state.inputDone) return;
+        e.preventDefault();
+        const t = e.touches ? e.touches[0] : e;
+        const rect = bar.getBoundingClientRect();
+        const relX = (t.clientX - rect.left) / rect.width;
+        pointer.x = Math.max(-0.5, Math.min(0.5, (relX - 0.5)));
+      };
+      el.addEventListener('touchmove', moveHandler, { passive: false });
+      el.addEventListener('mousemove', moveHandler);
+
+      const animate = () => {
+        if (state.inputDone) return;
+        // Auto-drift
+        pointer.vx += (Math.random() - 0.5) * 0.3 * state.speed;
+        pointer.vx *= 0.95;
+        pointer.x += pointer.vx * 0.01;
+        if (pointer.x < -0.5 || pointer.x > 0.5) {
+          pointer.vx *= -0.5;
+          pointer.x = Math.max(-0.5, Math.min(0.5, pointer.x));
+        }
+        const pct = 50 + pointer.x * 100;
+        pointerEl.style.left = `calc(${pct}% - 10px)`;
+
+        if (pct > 42 && pct < 58) {
+          inZoneTime = Date.now() - inZoneStart;
+          if (inZoneTime > 1500) {
+            win();
+            return;
+          }
+        } else {
+          inZoneStart = Date.now() + 9999; // reset
+        }
+        rafId = requestAnimationFrame(animate);
+      };
+      animate();
+
+      this._cleanup = () => {
+        cancelAnimationFrame(rafId);
+        el.removeEventListener('touchmove', moveHandler);
+        el.removeEventListener('mousemove', moveHandler);
+        el.style.background = '';
+      };
+    },
+    cleanup() { if (this._cleanup) this._cleanup(); }
+  },
+
+  // --- COLOR MATCH ---
+  colormatch: {
+    prompt: "Tap the color!",
+    init(el, duration) {
+      el.innerHTML = '';
+      const colors = [
+        { name: 'RED', cls: 'c-red' },
+        { name: 'BLUE', cls: 'c-blue' },
+        { name: 'GREEN', cls: 'c-green' },
+        { name: 'YELLOW', cls: 'c-yellow' }
+      ];
+      const target = colors[Math.floor(Math.random() * colors.length)];
+
+      const promptEl = document.createElement('div');
+      promptEl.style.position = 'absolute';
+      promptEl.style.top = '15%';
+      promptEl.style.left = '50%';
+      promptEl.style.transform = 'translateX(-50%)';
+      promptEl.style.fontSize = '2rem';
+      promptEl.style.fontWeight = '900';
+      promptEl.style.color = 'white';
+      promptEl.textContent = 'Tap: ' + target.name;
+      el.appendChild(promptEl);
+
+      const grid = document.createElement('div');
+      grid.className = 'color-btns';
+      grid.style.position = 'absolute';
+      grid.style.top = '35%';
+
+      const shuffled = [...colors].sort(() => Math.random() - 0.5);
+      shuffled.forEach(c => {
+        const btn = document.createElement('div');
+        btn.className = 'color-btn ' + c.cls;
+        if (c.name === 'YELLOW') btn.style.color = 'var(--bg)';
+        const label = document.createElement('span');
+        label.textContent = ' ';
+        btn.appendChild(label);
+        const handler = (e) => {
+          e.preventDefault();
+          if (c.name === target.name) win();
+          else lose();
+        };
+        btn.addEventListener('touchstart', handler, { passive: false });
+        btn.addEventListener('mousedown', handler);
+        grid.appendChild(btn);
+      });
+      el.appendChild(grid);
+
+      this._cleanup = () => {};
+    },
+    cleanup() { if (this._cleanup) this._cleanup(); }
+  },
+
+  // --- CATCH FALLING ---
+  catch: {
+    prompt: "Catch them!",
+    init(el, duration) {
+      el.innerHTML = '';
+      const area = document.createElement('div');
+      area.className = 'catch-area';
+      el.appendChild(area);
+
+      const bucket = document.createElement('div');
+      bucket.className = 'catch-bucket';
+      bucket.style.left = (window.innerWidth / 2 - 40) + 'px';
+      area.appendChild(bucket);
+      let bucketX = window.innerWidth / 2 - 40;
+
+      const moveHandler = (e) => {
+        if (state.inputDone) return;
+        e.preventDefault();
+        const t = e.touches ? e.touches[0] : e;
+        bucketX = Math.max(0, Math.min(window.innerWidth - 80, t.clientX - 40));
+        bucket.style.left = bucketX + 'px';
+      };
+      area.addEventListener('touchmove', moveHandler, { passive: false });
+      area.addEventListener('mousemove', moveHandler);
+
+      const fallingItems = [];
+      let caught = 0;
+      const need = 3;
+      let rafId;
+
+      const spawnItem = () => {
+        if (state.inputDone) return;
+        const item = document.createElement('div');
+        item.className = 'falling-item';
+        const emojis = ['⭐', '🎁', '💎', '🍄'];
+        item.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        item.style.left = (Math.random() * (window.innerWidth - 40)) + 'px';
+        item.style.top = '-40px';
+        area.appendChild(item);
+        fallingItems.push({ el: item, x: parseFloat(item.style.left), y: -40, vy: 3 + state.speed });
+        setTimeout(spawnItem, Math.max(400, 800 / state.speed));
+      };
+      spawnItem();
+
+      const animate = () => {
+        if (state.inputDone) return;
+        for (let i = fallingItems.length - 1; i >= 0; i--) {
+          const f = fallingItems[i];
+          f.y += f.vy;
+          f.el.style.top = f.y + 'px';
+
+          // Check catch
+          if (f.y + 30 > window.innerHeight - 70 && f.y < window.innerHeight - 20 &&
+              f.x + 20 > bucketX && f.x + 20 < bucketX + 80) {
+            f.el.remove();
+            fallingItems.splice(i, 1);
+            caught++;
+            if (caught >= need) {
+              win();
+              return;
+            }
+            continue;
+          }
+          // Missed
+          if (f.y > window.innerHeight) {
+            f.el.remove();
+            fallingItems.splice(i, 1);
+          }
+        }
+        rafId = requestAnimationFrame(animate);
+      };
+      animate();
+
+      this._cleanup = () => {
+        cancelAnimationFrame(rafId);
+        area.removeEventListener('touchmove', moveHandler);
+        area.removeEventListener('mousemove', moveHandler);
+      };
+    },
+    cleanup() { if (this._cleanup) this._cleanup(); }
+  },
+
+  // --- SPIN THE WHEEL ---
+  spin: {
+    prompt: "Spin it!",
+    init(el, duration) {
+      el.innerHTML = '';
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;';
+      el.appendChild(wrap);
+
+      const wheelWrap = document.createElement('div');
+      wheelWrap.style.position = 'relative';
+      wheelWrap.style.display = 'inline-block';
+      wrap.appendChild(wheelWrap);
+
+      const pointer = document.createElement('div');
+      pointer.className = 'spin-pointer';
+      wheelWrap.appendChild(pointer);
+
+      const wheel = document.createElement('div');
+      wheel.className = 'spin-wheel';
+      wheel.style.cssText = 'background:conic-gradient(var(--red) 0deg 60deg, var(--blue) 60deg 120deg, var(--green) 120deg 180deg, var(--yellow) 180deg 240deg, var(--pink) 240deg 300deg, var(--orange) 300deg 360deg);';
+      wheelWrap.appendChild(wheel);
+
+      const btn = document.createElement('button');
+      btn.className = 'spin-btn';
+      btn.textContent = 'SPIN';
+      wrap.appendChild(btn);
+
+      let spinning = false;
+      let rotation = 0;
+      const handler = (e) => {
+        if (spinning || state.inputDone) return;
+        e.preventDefault();
+        spinning = true;
+        btn.disabled = true;
+        rotation += 720 + Math.random() * 360;
+        wheel.style.transform = `rotate(${rotation}deg)`;
+        setTimeout(() => {
+          if (state.inputDone) return;
+          const finalAngle = ((rotation % 360) + 360) % 360;
+          // Pointer at top, 0deg = red center bottom. We need it to land in green zone (120-180deg)
+          // The pointer is at top (0deg position), wheel rotates. The section at pointer = 360 - finalAngle
+          const atPointer = (360 - finalAngle) % 360;
+          if (atPointer >= 120 && atPointer <= 180) {
+            win();
+          } else {
+            lose();
+          }
+        }, 3100);
+      };
+      btn.addEventListener('touchstart', handler, { passive: false });
+      btn.addEventListener('mousedown', handler);
+
+      this._cleanup = () => {
+        btn.removeEventListener('touchstart', handler);
+        btn.removeEventListener('mousedown', handler);
+      };
+    },
+    cleanup() { if (this._cleanup) this._cleanup(); }
+  },
+};
+
+// ===========================================
+// GAME ENGINE
+// ===========================================
+
+function startGame() {
+  state.lives = 4;
+  state.maxLives = 4;
+  state.score = 0;
+  state.stage = 1;
+  state.gamesThisStage = 0;
+  state.speed = 1.0;
+  state.bossStage = false;
+  state.bossWins = 0;
+  state.playing = true;
+
+  App.titleScreen.classList.add('hidden');
+  App.gameOver.classList.add('hidden');
+  App.hud.classList.remove('hidden');
+  updateHUD();
+  nextMicrogame();
+}
+
+function nextMicrogame() {
+  if (!state.playing) return;
+  state.inputDone = false;
+
+  // Clean up previous game
+  if (state.currentGame && microgames[state.currentGame].cleanup) {
+    microgames[state.currentGame].cleanup();
+  }
+  App.gameArea.innerHTML = '';
+  App.gameArea.className = 'game-area';
+  App.gameArea.style.cssText = '';
+
+  // Pick game
+  const gameKeys = Object.keys(microgames);
+  let gameKey;
+  if (state.bossStage) {
+    gameKey = gameKeys[Math.floor(Math.random() * gameKeys.length)];
+  } else {
+    gameKey = gameKeys[Math.floor(Math.random() * gameKeys.length)];
+  }
+  state.currentGame = gameKey;
+  const game = microgames[gameKey];
+
+  // Show prompt
+  App.prompt.textContent = game.prompt;
+  App.prompt.classList.remove('hidden');
+  // Re-trigger animation
+  App.prompt.style.animation = 'none';
+  App.prompt.offsetHeight;
+  App.prompt.style.animation = '';
+
+  // Duration based on speed & stage
+  const baseDuration = state.bossStage ? 1500 : Math.max(1200, 3000 / state.speed);
+  state.gameDuration = baseDuration;
+  state.gameStartTime = Date.now();
+
+  // Show timer
+  App.timerRing.classList.remove('hidden');
+  App.timerFg.classList.remove('warn', 'danger');
+  App.timerFg.style.strokeDashoffset = '0';
+
+  // Start countdown
+  if (state.gameTimer) clearInterval(state.gameTimer);
+  state.gameTimer = setInterval(() => {
+    if (state.inputDone) return;
+    const elapsed = Date.now() - state.gameStartTime;
+    const progress = elapsed / state.gameDuration;
+    const remaining = 1 - progress;
+
+    App.timerFg.style.strokeDashoffset = (TIMER_CIRCUMFERENCE * progress).toString();
+
+    if (remaining < 0.3) App.timerFg.classList.add('danger');
+    else if (remaining < 0.5) App.timerFg.classList.add('warn');
+
+    if (progress >= 1) {
+      // Time's up
+      if (gameKey === 'donttap') {
+        // Survived = win
+        win();
+      } else {
+        lose();
+      }
+    }
+  }, 50);
+
+  // Initialize the microgame (slight delay for visual transition)
+  setTimeout(() => {
+    if (state.inputDone) return;
+    game.init(App.gameArea, baseDuration);
+  }, 200);
+}
+
+function win() {
+  if (state.inputDone) return;
+  state.inputDone = true;
+  clearInterval(state.gameTimer);
+
+  if (state.currentGame && microgames[state.currentGame].cleanup) {
+    microgames[state.currentGame].cleanup();
+  }
+
+  state.score += 100 * state.stage;
+
+  if (state.bossStage) {
+    state.bossWins++;
+    if (state.bossWins >= state.bossNeeded) {
+      // Boss cleared!
+      state.bossStage = false;
+      state.bossWins = 0;
+      state.stage++;
+      state.gamesThisStage = 0;
+      state.speed = Math.min(state.speed + 0.3, 3.0);
+      showSpeedUp();
+      setTimeout(() => nextMicrogame(), 1800);
+    } else {
+      showResult(true);
+      setTimeout(() => nextMicrogame(), 900);
+    }
+  } else {
+    state.gamesThisStage++;
+    if (state.gamesThisStage >= state.gamesPerStage) {
+      // Boss stage!
+      state.bossStage = true;
+      state.bossWins = 0;
+      showSpeedUp('Boss Stage!');
+      setTimeout(() => nextMicrogame(), 1800);
+    } else {
+      showResult(true);
+      setTimeout(() => nextMicrogame(), 900);
+    }
+  }
+
+  updateHUD();
+}
+
+function lose() {
+  if (state.inputDone) return;
+  state.inputDone = true;
+  clearInterval(state.gameTimer);
+
+  if (state.currentGame && microgames[state.currentGame].cleanup) {
+    microgames[state.currentGame].cleanup();
+  }
+
+  state.lives--;
+  // Shake screen
+  App.gameArea.classList.add('shake');
+  setTimeout(() => App.gameArea.classList.remove('shake'), 300);
+
+  updateHUD();
+
+  if (state.lives <= 0) {
+    showResult(false);
+    setTimeout(() => gameOver(), 900);
+  } else {
+    showResult(false);
+    setTimeout(() => nextMicrogame(), 900);
+  }
+}
+
+function showResult(isWin) {
+  App.resultFlash.className = 'result-flash';
+  App.resultText.textContent = isWin ? 'Nice!' : 'Oops!';
+  // Re-trigger animation
+  App.resultFlash.offsetHeight;
+  App.resultFlash.className = 'result-flash show ' + (isWin ? 'win' : 'lose');
+}
+
+function showSpeedUp(text) {
+  App.speedUpText.textContent = text || 'Faster!';
+  App.speedUp.classList.remove('show');
+  App.speedUp.offsetHeight;
+  App.speedUp.classList.add('show');
+  setTimeout(() => App.speedUp.classList.remove('show'), 1500);
+}
+
+function gameOver() {
+  state.playing = false;
+  clearInterval(state.gameTimer);
+  App.hud.classList.add('hidden');
+  App.prompt.classList.add('hidden');
+  App.timerRing.classList.add('hidden');
+  App.gameArea.innerHTML = '';
+  App.gameArea.style.cssText = '';
+  App.goScore.textContent = state.score;
+  App.goStage.textContent = 'Reached Stage ' + state.stage;
+  App.gameOver.classList.remove('hidden');
+}
+
+function updateHUD() {
+  // Lives hearts
+  App.livesEl.innerHTML = '';
+  for (let i = 0; i < state.maxLives; i++) {
+    const heart = document.createElement('span');
+    heart.className = 'life-heart' + (i >= state.lives ? ' lost' : '');
+    heart.textContent = '❤';
+    App.livesEl.appendChild(heart);
+  }
+  App.scoreEl.textContent = state.score;
+  App.stageBadge.textContent = state.bossStage ? 'BOSS!' : 'Stage ' + state.stage;
+  App.stageBadge.classList.toggle('boss', state.bossStage);
+}
+
+// ===========================================
+// BUTTONS
+// ===========================================
+App.startBtn.addEventListener('click', startGame);
+App.retryBtn.addEventListener('click', startGame);
+
+// Prevent default touch behaviors
+document.addEventListener('gesturestart', e => e.preventDefault());
+document.addEventListener('touchmove', e => {
+  if (state.playing) e.preventDefault();
+}, { passive: false });
+</script>
+</body>
+</html>
