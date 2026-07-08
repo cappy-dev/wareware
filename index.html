@@ -2022,16 +2022,30 @@ function updateHUD() {
 }
 
 // ===========================================
-// BUTTONS
-// ===========================================
-App.startBtn.addEventListener('click', startGame);
-App.retryBtn.addEventListener('click', startGame);
+// BUTTONS — see addTapListener below for mobile-friendly tap handling
 
 // Prevent default touch behaviors
 document.addEventListener('gesturestart', e => e.preventDefault());
 document.addEventListener('touchmove', e => {
   if (state.playing) e.preventDefault();
 }, { passive: false });
+
+// Mobile-friendly button helpers: use both touchstart and click
+// Store touchId/time to avoid duplicate calls (touchstart + click fire on same tap)
+function addTapListener(el, fn) {
+  let lastTouch = 0;
+  el.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    lastTouch = Date.now();
+    fn();
+  }, { passive: false });
+  el.addEventListener('click', function(e) {
+    if (Date.now() - lastTouch < 500) return; // Ignore if touchstart already handled
+    fn();
+  });
+}
+addTapListener(App.startBtn, startGame);
+addTapListener(App.retryBtn, startGame);
 </script>
 </body>
 </html>
